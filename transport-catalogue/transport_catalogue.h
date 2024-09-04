@@ -21,6 +21,12 @@ struct Bus {
     std::vector<Stop*> stops;
 };
 
+struct BusInfo {
+    size_t stops_on_route{};
+    size_t unique_stops{};
+    double length{};
+};
+
 class TransportCatalogue {
     std::unordered_map<std::string_view, Stop*> stops_names;
     std::unordered_map<std::string_view, Bus*> buses_names;
@@ -29,11 +35,11 @@ class TransportCatalogue {
     
 public: 
     
-    void AddBus(std::string, const std::vector<std::string_view>&);
-    void AddStop(std::string, const Coordinates&);
-    Bus* FindBus(const std::string_view&) const;
-    std::optional<std::set<std::string_view>> FindStop(const std::string_view&) const;
-    std::string GetBusInfo(const std::string_view&) const;
+    void AddBus(std::string bus_name, const std::vector<std::string_view>& stops);
+    void AddStop(std::string stop_name, const Coordinates& stop_coord);
+    Bus* FindBus(const std::string_view& name) const;
+    std::optional<std::set<std::string_view>> BusesForStop(const std::string_view& name) const;
+    BusInfo GetBusInfo(const std::string_view& name) const;
 };
 
 }

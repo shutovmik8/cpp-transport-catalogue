@@ -13,32 +13,16 @@ namespace trancport_catalogue {
 namespace detail {  
 
 void PrintBus(const TransportCatalogue& tansport_catalogue, std::string_view request, std::ostream& output) {
-    Bus* bus = tansport_catalogue.FindBus(request);
-    if (!bus) {
+    BusInfo bus_info = tansport_catalogue.GetBusInfo(request);
+    if (bus_info.stops_on_route == 0) {
         output << "Bus " << std::string(request) << ": not found" << std::endl;
         return;
     }
-    std::unordered_set<Stop*> unique_stops;
-    size_t amount = 0;
-    double length = 0;
-    Stop* last_stop = nullptr;
-    for (auto& stop_ptr : bus->stops) {
-        if (amount) {
-            length += ComputeDistance(last_stop->coordinates, stop_ptr->coordinates);
-        }
-        if (unique_stops.contains(stop_ptr)) {
-            last_stop = stop_ptr;
-            continue;
-        }
-        last_stop = stop_ptr;
-        unique_stops.insert(stop_ptr);
-        ++amount;
-    }
-    output << "Bus " << std::string(request) << ": " << bus->stops.size() << " stops on route, " << amount << " unique stops, " << std::setprecision(6) << length << " route length" << std::endl;
+    output << "Bus " << std::string(request) << ": " << bus_info.stops_on_route << " stops on route, " << bus_info.unique_stops << " unique stops, " << std::setprecision(6) << bus_info.length << " route length" << std::endl;
 }
 
 void PrintStop(const TransportCatalogue& tansport_catalogue, std::string_view request, std::ostream& output) {
-    auto buses_for_stop = tansport_catalogue.FindStop(request);
+    auto buses_for_stop = tansport_catalogue.BusesForStop(request);
     if (!buses_for_stop.has_value()) {
         output << "Stop " << request << ": not found" << std::endl;
         return;

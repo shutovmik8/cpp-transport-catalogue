@@ -3,6 +3,7 @@
 #include <set>
 #include <string>
 #include <string_view>
+#include <unordered_set>
 #include <vector>
 
 #include "transport_catalogue.h"
@@ -24,13 +25,14 @@ void TransportCatalogue::AddStop(std::string stop_name, const Coordinates& stop_
 }
 
 Bus* TransportCatalogue::FindBus(const std::string_view& name) const {
-    if (buses_names.contains(name)) {
-        return buses_names.at(name);
+    auto it = buses_names.find(name);
+    if (it != buses_names.end()) {
+        return it->second;
     }
     return nullptr;
 }
 
-std::optional<std::set<std::string_view>> TransportCatalogue::FindStop(const std::string_view& name) const {
+std::optional<std::set<std::string_view>> TransportCatalogue::BusesForStop(const std::string_view& name) const {
     if (!stops_names.contains(name)) {
         return std::nullopt;
     }
@@ -44,11 +46,28 @@ std::optional<std::set<std::string_view>> TransportCatalogue::FindStop(const std
     return buses_for_stop;
 }
 
-std::string TransportCatalogue::GetBusInfo(const std::string_view& name) const {
-    if (buses_names.contains(name)) {
-        return buses_names.at(name)->name;
+BusInfo TransportCatalogue::GetBusInfo(const std::string_view& name) const {
+    auto it = buses_names.find(name);
+    if (it == buses_names.end()) {
+        return BusInfo{};
     }
-    return {};
+    std::unordered_set<Stop*> unique_stops;
+    size_t amount = 0;
+    double length = 0;
+    Stop* last_stop = nullptr;
+    for (auto& stop_ptr : it->second->stops) {
+        if (amount) {
+            length += detail::ComputeDistance(last_stop->coordinates, stop_ptr->coordinates);
+        }
+        if (unique_stops.contains(stop_ptr)) {
+            last_stop = stop_ptr;
+            continue;
+        }
+        last_stop = stop_ptr;
+        unique_stops.insert(stop_ptr);
+        ++amount;
+    }
+    return {it->second->stops.size(), amount, length};
 }
 
 }
