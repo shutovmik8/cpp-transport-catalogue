@@ -13,16 +13,16 @@ namespace trancport_catalogue {
 namespace detail {  
 
 void PrintBus(const TransportCatalogue& tansport_catalogue, std::string_view request, std::ostream& output) {
-    BusInfo bus_info = tansport_catalogue.GetBusInfo(request);
-    if (bus_info.stops_on_route == 0) {
+    auto bus_info = tansport_catalogue.GetBusInfo(request);
+    if (!bus_info.has_value()) {
         output << "Bus " << std::string(request) << ": not found" << std::endl;
         return;
     }
-    output << "Bus " << std::string(request) << ": " << bus_info.stops_on_route << " stops on route, " << bus_info.unique_stops << " unique stops, " << std::setprecision(6) << bus_info.length << " route length" << std::endl;
+    output << "Bus " << std::string(request) << ": " << bus_info->stops_on_route << " stops on route, " << bus_info->unique_stops << " unique stops, " << std::setprecision(6) << bus_info->length << " route length" << std::endl;
 }
 
 void PrintStop(const TransportCatalogue& tansport_catalogue, std::string_view request, std::ostream& output) {
-    auto buses_for_stop = tansport_catalogue.BusesForStop(request);
+    auto buses_for_stop = tansport_catalogue.GetBusesForStop(request);
     if (!buses_for_stop.has_value()) {
         output << "Stop " << request << ": not found" << std::endl;
         return;

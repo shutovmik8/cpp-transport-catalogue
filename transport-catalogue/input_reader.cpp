@@ -12,7 +12,7 @@ namespace detail {
  */
 Coordinates ParseCoordinates(std::string_view str) {
     static const double nan = std::nan("");
-
+d
     auto not_space = str.find_first_not_of(' ');
     auto comma = str.find(',');
 

@@ -37,9 +37,10 @@ public:
     
     void AddBus(std::string bus_name, const std::vector<std::string_view>& stops);
     void AddStop(std::string stop_name, const Coordinates& stop_coord);
-    Bus* FindBus(const std::string_view& name) const;
-    std::optional<std::set<std::string_view>> BusesForStop(const std::string_view& name) const;
-    BusInfo GetBusInfo(const std::string_view& name) const;
+    const Bus* FindBus(const std::string_view name) const;
+    const Stop* FindStop(const std::string_view name) const;
+    std::optional<std::set<std::string_view>> GetBusesForStop(const std::string_view name) const;
+    std::optional<BusInfo> GetBusInfo(const std::string_view name) const;
 };
 
 }

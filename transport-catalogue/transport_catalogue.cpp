@@ -24,7 +24,7 @@ void TransportCatalogue::AddStop(std::string stop_name, const Coordinates& stop_
     stops_names[stops_.back().name] = &stops_.back();
 }
 
-Bus* TransportCatalogue::FindBus(const std::string_view& name) const {
+const Bus* TransportCatalogue::FindBus(const std::string_view name) const {
     auto it = buses_names.find(name);
     if (it != buses_names.end()) {
         return it->second;
@@ -32,7 +32,15 @@ Bus* TransportCatalogue::FindBus(const std::string_view& name) const {
     return nullptr;
 }
 
-std::optional<std::set<std::string_view>> TransportCatalogue::BusesForStop(const std::string_view& name) const {
+const Stop* TransportCatalogue::FindStop(const std::string_view name) const {
+    auto it = stops_names.find(name);
+    if (it != stops_names.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+std::optional<std::set<std::string_view>> TransportCatalogue::GetBusesForStop(const std::string_view name) const {
     if (!stops_names.contains(name)) {
         return std::nullopt;
     }
@@ -46,10 +54,10 @@ std::optional<std::set<std::string_view>> TransportCatalogue::BusesForStop(const
     return buses_for_stop;
 }
 
-BusInfo TransportCatalogue::GetBusInfo(const std::string_view& name) const {
+std::optional<BusInfo> TransportCatalogue::GetBusInfo(const std::string_view name) const {
     auto it = buses_names.find(name);
     if (it == buses_names.end()) {
-        return BusInfo{};
+        return std::nullopt;
     }
     std::unordered_set<Stop*> unique_stops;
     size_t amount = 0;
@@ -67,7 +75,7 @@ BusInfo TransportCatalogue::GetBusInfo(const std::string_view& name) const {
         unique_stops.insert(stop_ptr);
         ++amount;
     }
-    return {it->second->stops.size(), amount, length};
+    return BusInfo{it->second->stops.size(), amount, length};
 }
 
 }
