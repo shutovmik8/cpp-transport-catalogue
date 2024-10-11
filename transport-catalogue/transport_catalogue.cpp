@@ -10,6 +10,12 @@
 
 namespace trancport_catalogue {
 
+void TransportCatalogue::AddDistance(std::string stop_name, std::unordered_map<std::string, int> distances) {
+    for (auto& item : distances) {
+        distances_[{stops_names[stop_name], stops_names[item.first]}] = item.second;
+    }
+}    
+    
 void TransportCatalogue::AddBus(std::string bus_name, const std::vector<std::string_view>& stops) {
     std::vector<Stop*> bus_stops;
     for (auto& stop: stops) { 
@@ -62,20 +68,27 @@ std::optional<BusInfo> TransportCatalogue::GetBusInfo(const std::string_view nam
     std::unordered_set<Stop*> unique_stops;
     size_t amount = 0;
     double length = 0;
+    double real_length = 0;
     Stop* last_stop = nullptr;
     for (auto& stop_ptr : it->second->stops) {
         if (amount) {
             length += detail::ComputeDistance(last_stop->coordinates, stop_ptr->coordinates);
-        }
-        if (unique_stops.contains(stop_ptr)) {
-            last_stop = stop_ptr;
-            continue;
+            auto it = distances_.find({last_stop, stop_ptr});
+            if (it == distances_.end()) {
+                real_length += distances_.at({stop_ptr, last_stop});
+            }
+            else {
+                real_length += it->second;
+            }
         }
         last_stop = stop_ptr;
+        if (unique_stops.contains(stop_ptr)) {
+            continue;
+        }
         unique_stops.insert(stop_ptr);
         ++amount;
     }
-    return BusInfo{it->second->stops.size(), amount, length};
+    return BusInfo{it->second->stops.size(), amount, real_length, real_length / length};
 }
 
 }

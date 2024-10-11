@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iterator>
+#include <iostream>
 
 #include "input_reader.h"
 
@@ -8,11 +9,38 @@ namespace trancport_catalogue {
 
 namespace detail {    
 /**
- * Парсит строку вида "10.123,  -30.1837" и возвращает пару координат (широта, долгота)
+ * Парсит строку вида "10.123,  -30.1837, D1m to stop1, D2m to stop2, ..." и возвращает unordered_map<string, int>
+ */    
+std::unordered_map<std::string, int> ParseDistances(std::string_view str) {
+    std::unordered_map<std::string, int> distances;
+    auto comma = str.find(',');
+    comma = str.find(',', comma + 1);
+    if (comma == str.npos) {
+        return distances;
+    }
+    while(1) {
+        auto first_number = str.find_first_not_of(' ', comma + 1);
+        auto litera_m = str.find('m', first_number);
+        int len = std::stoi(std::string(str.substr(first_number, litera_m - first_number)));
+        auto first_name_symbol = str.find('o', litera_m + 1);
+        first_name_symbol = str.find_first_not_of(' ', first_name_symbol + 1);
+        comma = str.find(',', first_name_symbol);
+        if (comma == str.npos) {
+            distances[std::string(str.substr(first_name_symbol))] = len;
+            break;
+        }
+        else {
+            distances[std::string(str.substr(first_name_symbol, comma - first_name_symbol))] = len;
+        }
+    }
+    return distances;
+}   
+/**
+ * Парсит строку вида "10.123,  -30.1837, D1m to stop1, D2m to stop2, ..." и возвращает пару координат (широта, долгота)
  */
 Coordinates ParseCoordinates(std::string_view str) {
     static const double nan = std::nan("");
-d
+
     auto not_space = str.find_first_not_of(' ');
     auto comma = str.find(',');
 
@@ -21,9 +49,16 @@ d
     }
 
     auto not_space2 = str.find_first_not_of(' ', comma + 1);
-
+    auto comma2 = str.find(',', not_space2);
+    
     double lat = std::stod(std::string(str.substr(not_space, comma - not_space)));
-    double lng = std::stod(std::string(str.substr(not_space2)));
+    double lng;
+    if (comma2 == str.npos) {
+        lng = std::stod(std::string(str.substr(not_space2)));
+    }
+    else {
+        lng = std::stod(std::string(str.substr(not_space2, comma2 - not_space2)));
+    }
 
     return {lat, lng};
 }
@@ -103,6 +138,7 @@ CommandDescription ParseCommandDescription(std::string_view line) {
 void InputReader::ParseLine(std::string_view line) {
     auto command_description = detail::ParseCommandDescription(line);
     if (command_description) {
+        command_description.command = detail::Trim(command_description.command);
         commands_.push_back(std::move(command_description));
     }
 }
@@ -110,12 +146,17 @@ void InputReader::ParseLine(std::string_view line) {
 void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) const {
     for (auto& command_ : commands_) {
         if (command_.command == "Stop") {
-            catalogue.AddStop(std::move(command_.id), detail::ParseCoordinates(detail::Trim(command_.description)));
+            catalogue.AddStop(command_.id, detail::ParseCoordinates(command_.description));
+        }
+    }
+    for (auto& command_ : commands_) {
+        if (command_.command == "Stop") {
+            catalogue.AddDistance(std::move(command_.id), detail::ParseDistances(command_.description));
         }
     }
     for (auto& command_ : commands_) {
         if (command_.command == "Bus") {
-            catalogue.AddBus(std::move(command_.id), detail::ParseRoute(detail::Trim(command_.description)));
+            catalogue.AddBus(std::move(command_.id), detail::ParseRoute(command_.description));
         }
         
     }

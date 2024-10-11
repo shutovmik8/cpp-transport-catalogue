@@ -18,7 +18,7 @@ void PrintBus(const TransportCatalogue& tansport_catalogue, std::string_view req
         output << "Bus " << std::string(request) << ": not found" << std::endl;
         return;
     }
-    output << "Bus " << std::string(request) << ": " << bus_info->stops_on_route << " stops on route, " << bus_info->unique_stops << " unique stops, " << std::setprecision(6) << bus_info->length << " route length" << std::endl;
+    output << "Bus " << std::string(request) << ": " << bus_info->stops_on_route << " stops on route, " << bus_info->unique_stops << " unique stops, " << std::setprecision(6) << bus_info->length << " route length, " << bus_info->curvature << " curvature" << std::endl;
 }
 
 void PrintStop(const TransportCatalogue& tansport_catalogue, std::string_view request, std::ostream& output) {
