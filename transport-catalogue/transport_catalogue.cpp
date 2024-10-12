@@ -5,15 +5,27 @@
 #include <string_view>
 #include <unordered_set>
 #include <vector>
+#include <cassert>
 
 #include "transport_catalogue.h"
 
 namespace trancport_catalogue {
 
-void TransportCatalogue::AddDistance(std::string stop_name, std::unordered_map<std::string, int> distances) {
-    for (auto& item : distances) {
-        distances_[{stops_names[stop_name], stops_names[item.first]}] = item.second;
+int TransportCatalogue::GetDistance(std::string stop1_name, std::string stop2_name) const {
+    auto stop1_it = stops_names.find(stop1_name);
+    assert(stop1_it != stops_names.end());
+    auto stop2_it = stops_names.find(stop2_name);
+    assert(stop2_it != stops_names.end());
+    auto it = distances_.find({stop1_it->second, stop2_it->second});
+    if (it == distances_.end()) {
+        it = distances_.find({stop2_it->second, stop1_it->second});
     }
+    assert(it != distances_.end());
+    return it->second;
+}
+    
+void TransportCatalogue::AddDistance(std::string stop1_name, std::string stop2_name, int distance) {
+    distances_[{stops_names[stop1_name], stops_names[stop2_name]}] = distance;
 }    
     
 void TransportCatalogue::AddBus(std::string bus_name, const std::vector<std::string_view>& stops) {
@@ -73,13 +85,7 @@ std::optional<BusInfo> TransportCatalogue::GetBusInfo(const std::string_view nam
     for (auto& stop_ptr : it->second->stops) {
         if (amount) {
             length += detail::ComputeDistance(last_stop->coordinates, stop_ptr->coordinates);
-            auto it = distances_.find({last_stop, stop_ptr});
-            if (it == distances_.end()) {
-                real_length += distances_.at({stop_ptr, last_stop});
-            }
-            else {
-                real_length += it->second;
-            }
+            real_length += TransportCatalogue::GetDistance(last_stop->name, stop_ptr->name);
         }
         last_stop = stop_ptr;
         if (unique_stops.contains(stop_ptr)) {

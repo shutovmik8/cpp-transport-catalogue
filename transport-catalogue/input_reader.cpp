@@ -9,7 +9,7 @@ namespace trancport_catalogue {
 
 namespace detail {    
 /**
- * Парсит строку вида "10.123,  -30.1837, D1m to stop1, D2m to stop2, ..." и возвращает unordered_map<string, int>
+ * Парсит строку вида "10.123,  -30.1837, D1m to stop1, D2m to stop2, ..." и возвращает unordered_map<name, distance>
  */    
 std::unordered_map<std::string, int> ParseDistances(std::string_view str) {
     std::unordered_map<std::string, int> distances;
@@ -151,7 +151,9 @@ void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) 
     }
     for (auto& command_ : commands_) {
         if (command_.command == "Stop") {
-            catalogue.AddDistance(std::move(command_.id), detail::ParseDistances(command_.description));
+            for (auto& item : detail::ParseDistances(command_.description)) {
+                catalogue.AddDistance(std::move(command_.id), item.first, item.second);
+            }
         }
     }
     for (auto& command_ : commands_) {
