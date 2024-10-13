@@ -152,7 +152,7 @@ void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) 
     for (auto& command_ : commands_) {
         if (command_.command == "Stop") {
             for (auto& item : detail::ParseDistances(command_.description)) {
-                catalogue.AddDistance(std::move(command_.id), item.first, item.second);
+                catalogue.AddDistance(command_.id, item.first, item.second);
             }
         }
     }

@@ -11,7 +11,7 @@
 
 namespace trancport_catalogue {
 
-int TransportCatalogue::GetDistance(std::string stop1_name, std::string stop2_name) const {
+std::optional<int> TransportCatalogue::GetDistance(const std::string_view stop1_name, const std::string_view stop2_name) const {
     auto stop1_it = stops_names.find(stop1_name);
     assert(stop1_it != stops_names.end());
     auto stop2_it = stops_names.find(stop2_name);
@@ -20,11 +20,13 @@ int TransportCatalogue::GetDistance(std::string stop1_name, std::string stop2_na
     if (it == distances_.end()) {
         it = distances_.find({stop2_it->second, stop1_it->second});
     }
-    assert(it != distances_.end());
+    if (it == distances_.end()) {
+        return std::nullopt;
+    }
     return it->second;
 }
     
-void TransportCatalogue::AddDistance(std::string stop1_name, std::string stop2_name, int distance) {
+void TransportCatalogue::AddDistance(const std::string_view stop1_name, const std::string_view stop2_name, int distance) {
     distances_[{stops_names[stop1_name], stops_names[stop2_name]}] = distance;
 }    
     
@@ -85,7 +87,7 @@ std::optional<BusInfo> TransportCatalogue::GetBusInfo(const std::string_view nam
     for (auto& stop_ptr : it->second->stops) {
         if (amount) {
             length += detail::ComputeDistance(last_stop->coordinates, stop_ptr->coordinates);
-            real_length += TransportCatalogue::GetDistance(last_stop->name, stop_ptr->name);
+            real_length += TransportCatalogue::GetDistance(last_stop->name, stop_ptr->name).value();
         }
         last_stop = stop_ptr;
         if (unique_stops.contains(stop_ptr)) {

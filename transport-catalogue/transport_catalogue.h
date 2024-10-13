@@ -44,8 +44,8 @@ class TransportCatalogue {
     
 public: 
     
-    void AddDistance(std::string stop1_name, std::string stop2_name, int distance);
-    int GetDistance(std::string stop1_name, std::string stop2_name) const;
+    void AddDistance(const std::string_view stop1_name, const std::string_view stop2_name, int distance);
+    std::optional<int> GetDistance(const std::string_view stop1_name, const std::string_view stop2_name) const;
     void AddBus(std::string bus_name, const std::vector<std::string_view>& stops);
     void AddStop(std::string stop_name, const Coordinates& stop_coord);
     const Bus* FindBus(const std::string_view name) const;
