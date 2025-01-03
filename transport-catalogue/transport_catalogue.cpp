@@ -1,3 +1,7 @@
+/*
+ * Здесь можно разместить код транспортного справочника
+ */
+
 #include <algorithm>
 #include <optional>
 #include <set>
@@ -9,7 +13,7 @@
 
 #include "transport_catalogue.h"
 
-namespace trancport_catalogue {
+namespace transport_catalogue {
 
 std::optional<int> TransportCatalogue::GetDistance(const std::string_view stop1_name, const std::string_view stop2_name) const {
     auto stop1_it = stops_names.find(stop1_name);
@@ -99,4 +103,4 @@ std::optional<BusInfo> TransportCatalogue::GetBusInfo(const std::string_view nam
     return BusInfo{it->second->stops.size(), amount, real_length, real_length / length};
 }
 
-}
+} //transport_catalogue

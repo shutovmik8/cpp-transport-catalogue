@@ -1,15 +1,20 @@
+/*
+ * Здесь можно разместить код транспортного справочника
+ */
+
 #pragma once
 
 #include <deque>
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
 #include "geo.h"
 
-namespace trancport_catalogue {
+namespace transport_catalogue {
 
 struct Stop {
     std::string name;
@@ -43,7 +48,6 @@ class TransportCatalogue {
     std::deque<Bus> buses_;
     
 public: 
-    
     void AddDistance(const std::string_view stop1_name, const std::string_view stop2_name, int distance);
     std::optional<int> GetDistance(const std::string_view stop1_name, const std::string_view stop2_name) const;
     void AddBus(std::string bus_name, const std::vector<std::string_view>& stops);
@@ -54,4 +58,4 @@ public:
     std::optional<BusInfo> GetBusInfo(const std::string_view name) const;
 };
 
-}
+} //transport_catalogue

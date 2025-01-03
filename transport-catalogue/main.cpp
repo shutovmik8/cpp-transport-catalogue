@@ -1,30 +1,25 @@
+/*
+    * Примерная структура программы:
+    *
+    * Считать JSON из stdin
+    * Построить на его основе JSON базу данных транспортного справочника
+    * Выполнить запросы к справочнику, находящиеся в массива "stat_requests", построив JSON-массив
+    * с ответами Вывести в stdout ответы в виде JSON
+*/
+
 #include <iostream>
 #include <string>
 
-#include "input_reader.h"
-#include "stat_reader.h"
+#include "json_reader.h"
+#include "transport_catalogue.h"
+#include "map_renderer.h"
 
 using namespace std;
 
 int main() {
-    trancport_catalogue::TransportCatalogue catalogue;
-
-    int base_request_count;
-    cin >> base_request_count >> ws;
-    {
-        trancport_catalogue::InputReader reader;
-        for (int i = 0; i < base_request_count; ++i) {
-            string line;
-            getline(cin, line);
-            reader.ParseLine(line);
-        }
-        reader.ApplyCommands(catalogue);
-    }
-    int stat_request_count;
-    cin >> stat_request_count >> ws;
-    for (int i = 0; i < stat_request_count; ++i) {
-        string line;
-        getline(cin, line);
-        trancport_catalogue::ParseAndPrintStat(catalogue, line, cout);
-    }
+    transport_catalogue::TransportCatalogue catalogue;
+    json::Document catalogue_data{json::Load(std::cin)};
+    transport_catalogue::LoadCatalogueFromJson(catalogue, catalogue_data.GetRoot());
+    json::Document answer_data{transport_catalogue::ParseAndMakeAnswers(catalogue, catalogue_data.GetRoot())};
+    json::Print(answer_data, std::cout);
 }
