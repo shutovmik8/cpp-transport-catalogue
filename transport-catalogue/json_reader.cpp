@@ -11,8 +11,6 @@
  */
 namespace transport_catalogue {
 
-namespace detail {  
-
 using namespace std::literals;
 
 json::Node GetBusStat(const TransportCatalogue& tansport_catalogue, const json::Node& request) {
@@ -80,7 +78,7 @@ RenderSettings ParseRenderSettings(const json::Node& catalogue_data) {
     const auto& stat_requests = catalogue_data.AsMap().at("render_settings").AsMap();
     std::vector<svg::Color> colors;
     for (auto& color : stat_requests.at("color_palette").AsArray()) {
-        colors.push_back(detail::GetColorFromJson(color));
+        colors.push_back(GetColorFromJson(color));
     }
     return RenderSettings{
         stat_requests.at("width").AsDouble(),
@@ -92,13 +90,13 @@ RenderSettings ParseRenderSettings(const json::Node& catalogue_data) {
         {stat_requests.at("bus_label_offset").AsArray().at(0).AsDouble(), stat_requests.at("bus_label_offset").AsArray().at(1).AsDouble()},
         stat_requests.at("stop_label_font_size").AsInt(),
         {stat_requests.at("stop_label_offset").AsArray().at(0).AsDouble(), stat_requests.at("stop_label_offset").AsArray().at(1).AsDouble()},
-        detail::GetColorFromJson(stat_requests.at("underlayer_color")),
+        GetColorFromJson(stat_requests.at("underlayer_color")),
         stat_requests.at("underlayer_width").AsDouble(),
         colors
     };
 }
-    
-} //detail
+ 
+//} //detail
  
 std::map<std::string_view, RouteInfo> GetAllBuses(const TransportCatalogue& tansport_catalogue, const json::Node& catalogue_data) {
     const auto& base_requests = catalogue_data.AsMap().at("base_requests").AsArray();
@@ -109,9 +107,9 @@ std::map<std::string_view, RouteInfo> GetAllBuses(const TransportCatalogue& tans
             if ((bus->stops.empty()) or (bus->stops.size() < 3)) {
                 continue;
             }
-            std::vector<std::pair<std::string_view, PairOfDouble>> stops;
+            std::vector<Stop> stops;
             for (const auto* stop : bus->stops) {
-                stops.push_back({stop->name, {stop->coordinates.lat, stop->coordinates.lng}});
+                stops.push_back(*stop);
             }
             answer.insert({bus->name, {std::move(stops), request.AsMap().at("is_roundtrip").AsBool()}});
         }  
@@ -140,9 +138,9 @@ void LoadCatalogueFromJson(TransportCatalogue& catalogue, const json::Node& root
     for (const auto& base_request_data : base_requests) {
         const auto& base_request_data_map = base_request_data.AsMap();
         if (base_request_data_map.at("type").AsString() == "Bus") {
-            const auto& stops_names_vector = detail::MakeStopsNamesVector(base_request_data_map.at("stops").AsArray());
+            const auto& stops_names_vector = MakeStopsNamesVector(base_request_data_map.at("stops").AsArray());
             catalogue.AddBus(base_request_data_map.at("name").AsString(), base_request_data_map.at("is_roundtrip").AsBool() ? 
-                stops_names_vector : detail::ParseRoute(stops_names_vector));
+                stops_names_vector : ParseRoute(stops_names_vector));
         }
     }
 }
@@ -152,15 +150,15 @@ json::Document ParseAndMakeAnswers(const TransportCatalogue& tansport_catalogue,
     std::vector<json::Node> answers;
     for (const auto& request : stat_requests) {
         if (request.AsMap().at("type").AsString() == "Bus") {
-            answers.push_back(detail::GetBusStat(tansport_catalogue, request));
+            answers.push_back(GetBusStat(tansport_catalogue, request));
         }
         else if (request.AsMap().at("type").AsString() == "Stop") {
-            answers.push_back(detail::GetStopStat(tansport_catalogue, request));
+            answers.push_back(GetStopStat(tansport_catalogue, request));
         }
         else if (request.AsMap().at("type").AsString() == "Map") {
             json::Dict map_answer;
             map_answer.insert({"request_id", request.AsMap().at("id").AsInt()});
-            map_answer.insert({"map", GetMapJson(detail::ParseRenderSettings(catalogue_data), GetAllBuses(tansport_catalogue, catalogue_data))});
+            map_answer.insert({"map", GetMapJson(ParseRenderSettings(catalogue_data), GetAllBuses(tansport_catalogue, catalogue_data))});
             answers.push_back(json::Node(map_answer));
         }
     }

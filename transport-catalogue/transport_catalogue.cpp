@@ -90,7 +90,7 @@ std::optional<BusInfo> TransportCatalogue::GetBusInfo(const std::string_view nam
     Stop* last_stop = nullptr;
     for (auto& stop_ptr : it->second->stops) {
         if (amount) {
-            length += detail::ComputeDistance(last_stop->coordinates, stop_ptr->coordinates);
+            length += ComputeDistance(last_stop->coordinates, stop_ptr->coordinates);
             real_length += TransportCatalogue::GetDistance(last_stop->name, stop_ptr->name).value();
         }
         last_stop = stop_ptr;

@@ -13,18 +13,9 @@
 #include <vector>
 
 #include "geo.h"
+#include "domain.h"
 
 namespace transport_catalogue {
-
-struct Stop {
-    std::string name;
-    Coordinates coordinates;
-};
-
-struct Bus {
-    std::string name;
-    std::vector<Stop*> stops;
-};
 
 struct BusInfo {
     size_t stops_on_route{};

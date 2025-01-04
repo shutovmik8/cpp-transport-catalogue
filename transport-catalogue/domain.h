@@ -19,14 +19,19 @@
  */
 namespace transport_catalogue {
 
-struct PairOfDouble {
-    double x;
-    double y;
+struct Stop {
+    std::string name;
+    Coordinates coordinates;
+};
+
+struct Bus {
+    std::string name;
+    std::vector<Stop*> stops;
 };
     
 struct RouteInfo {
-    std::vector<std::pair<std::string_view, PairOfDouble>> stops;
+    std::vector<Stop> stops;
     bool is_roundtrip;
-};
+};  
     
 }

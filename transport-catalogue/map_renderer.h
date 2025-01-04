@@ -106,19 +106,19 @@ private:
 }; 
 
 //Заменяет координаты на поверхности земли (lat, lng) на координаты на плоскости (x, y)
-std::map<std::string_view, RouteInfo> GetStopsPoints(RenderSettings settings, std::map<std::string_view, RouteInfo> buses);
+void GetStopsPoints(const RenderSettings& settings, std::map<std::string_view, RouteInfo>& buses);
     
-void PrintRoutesLines(RenderSettings settings, std::map<std::string_view, RouteInfo> buses, svg::Document& doc);
+void PrintRoutesLines(const RenderSettings& settings, const std::map<std::string_view, RouteInfo>& buses, svg::Document& doc);
        
-void PrintRoutesNames(RenderSettings settings, std::map<std::string_view, RouteInfo> buses, svg::Document& doc);
+void PrintRoutesNames(const RenderSettings& settings, const std::map<std::string_view, RouteInfo>& buses, svg::Document& doc);
 
 //Возвращает все имеющиеся остановки, отсортированные в алфавитном порядке
-std::map<std::string_view, svg::Point> GetAllSortStops(std::map<std::string_view, RouteInfo> buses);
+std::map<std::string_view, svg::Point> GetAllSortStops(const std::map<std::string_view, RouteInfo>& buses);
     
-void PrintStopsCircles(RenderSettings settings, svg::Document& doc, std::map<std::string_view, svg::Point> stops);
+void PrintStopsCircles(const RenderSettings& settings, svg::Document& doc, const std::map<std::string_view, svg::Point>& stops);
  
-void PrintStopsNames(RenderSettings settings, svg::Document& doc, std::map<std::string_view, svg::Point> stops);
+void PrintStopsNames(const RenderSettings& settings, svg::Document& doc, const std::map<std::string_view, svg::Point>& stops);
     
-std::string GetMapJson(RenderSettings settings, std::map<std::string_view, RouteInfo> buses);
+std::string GetMapJson(const RenderSettings& settings, std::map<std::string_view, RouteInfo> buses);
    
 } //transport_catalogue

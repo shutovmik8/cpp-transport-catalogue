@@ -12,10 +12,6 @@ struct Coordinates {
     bool operator!=(const Coordinates& other) const;
 };
 
-namespace detail {
-
 double ComputeDistance(Coordinates from, Coordinates to);
-
-}
 
 }

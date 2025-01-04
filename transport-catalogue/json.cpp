@@ -274,14 +274,6 @@ Node LoadNode(istream& input) {
 
 }  // namespace
 
-Node::Node(Array array) : value_(move(array)) {}
-Node::Node(Dict map) : value_(move(map)) {}
-Node::Node(bool value) : value_(move(value)) {}
-Node::Node(int value) : value_(value) {}
-Node::Node(double value) : value_(move(value)) {}
-Node::Node(string value) : value_(move(value)) {}
-Node::Node(std::nullptr_t value) : value_(value) {}
-
 const Node::Value& Node::GetValue() const {
     return value_;
 }
