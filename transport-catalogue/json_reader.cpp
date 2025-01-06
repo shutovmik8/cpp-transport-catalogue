@@ -96,15 +96,13 @@ RenderSettings ParseRenderSettings(const json::Node& catalogue_data) {
     };
 }
  
-//} //detail
- 
 std::map<std::string_view, RouteInfo> GetAllBuses(const TransportCatalogue& tansport_catalogue, const json::Node& catalogue_data) {
     const auto& base_requests = catalogue_data.AsMap().at("base_requests").AsArray();
     std::map<std::string_view, RouteInfo> answer;
     for (const auto& request : base_requests) {
         if (request.AsMap().at("type").AsString() == "Bus") {
             const Bus* bus = tansport_catalogue.FindBus(request.AsMap().at("name").AsString());
-            if ((bus->stops.empty()) or (bus->stops.size() < 3)) {
+            if ((bus->stops.empty()) || (bus->stops.size() < 3)) {
                 continue;
             }
             std::vector<Stop> stops;
@@ -158,7 +156,8 @@ json::Document ParseAndMakeAnswers(const TransportCatalogue& tansport_catalogue,
         else if (request.AsMap().at("type").AsString() == "Map") {
             json::Dict map_answer;
             map_answer.insert({"request_id", request.AsMap().at("id").AsInt()});
-            map_answer.insert({"map", GetMapJson(ParseRenderSettings(catalogue_data), GetAllBuses(tansport_catalogue, catalogue_data))});
+            std::map<std::string_view, RouteInfo> buses = GetAllBuses(tansport_catalogue, catalogue_data);
+            map_answer.insert({"map", GetMapJson(ParseRenderSettings(catalogue_data), buses)});
             answers.push_back(json::Node(map_answer));
         }
     }

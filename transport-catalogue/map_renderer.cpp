@@ -19,22 +19,29 @@ svg::Point SphereProjector::operator()(Coordinates coords) const {
     return {(coords.lng - min_lon_) * zoom_coeff_ + padding_,
         (max_lat_ - coords.lat) * zoom_coeff_ + padding_};
 }
+    
+//В предыдущей версии кода buses менялся в строчках 35, 36.
+//В этой функции происходит проекция координат на плоскость (изменил название на более говорящее), поэтому buses передавался по неконстантной ссылке.
+//По этой же причине в функции GetMapJson buses не константный, так как предполагалось, что он будет изменен далее.
+//Если передавать buses по const ссылке, то тогда нужно делать копию и работать далее с ней (строчка 30, 37)
 
-void GetStopsPoints(const RenderSettings& settings, std::map<std::string_view, RouteInfo>& buses) {
+std::map<std::string_view, RouteInfo> ProjectionStopsPoints(const RenderSettings& settings, const std::map<std::string_view, RouteInfo>& buses) {
     std::set<Coordinates> coordinates;
+    std::map<std::string_view, RouteInfo> buses_ = buses;
     for (const auto& bus : buses) {
         for (const auto& stop : bus.second.stops) {
             coordinates.insert({stop.coordinates.lat, stop.coordinates.lng});
         }
     }
     const SphereProjector proj{coordinates.begin(), coordinates.end(), settings.width, settings.height, settings.padding};
-    for (auto& bus : buses) {
+    for (auto& bus : buses_) {
         for (auto& stop : bus.second.stops) {
             svg::Point point{proj({stop.coordinates.lat, stop.coordinates.lng})};
             stop.coordinates.lat = point.x;
             stop.coordinates.lng = point.y;
         }
     }
+    return buses_;
 }
     
 void PrintRoutesLines(const RenderSettings& settings, const std::map<std::string_view, RouteInfo>& buses, svg::Document& doc) {
@@ -135,12 +142,12 @@ void PrintStopsNames(const RenderSettings& settings, svg::Document& doc, const s
     }
 }
     
-std::string GetMapJson(const RenderSettings& settings, std::map<std::string_view, RouteInfo> buses) {
+std::string GetMapJson(const RenderSettings& settings, const std::map<std::string_view, RouteInfo>& buses) {
     svg::Document doc;
-    GetStopsPoints(settings, buses);
-    PrintRoutesLines(settings, buses, doc);
-    PrintRoutesNames(settings, buses, doc);
-    std::map<std::string_view, svg::Point> stops{GetAllSortStops(buses)};
+    std::map<std::string_view, RouteInfo> buses_with_points = ProjectionStopsPoints(settings, buses);
+    PrintRoutesLines(settings, buses_with_points, doc);
+    PrintRoutesNames(settings, buses_with_points, doc);
+    std::map<std::string_view, svg::Point> stops{GetAllSortStops(buses_with_points)};
     PrintStopsCircles(settings, doc, stops);
     PrintStopsNames(settings, doc, stops);
     std::ostringstream map_json;

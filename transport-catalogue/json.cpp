@@ -256,7 +256,7 @@ Node LoadNode(istream& input) {
         return Node(LoadString(input));
     } else if (c == 'n') {
         return Node(LoadNull(input));
-    } else if ((c == 't') or (c == 'f')) {
+    } else if ((c == 't') || (c == 'f')) {
         input.putback(c);
         return Node(LoadBool(input));
     } else {
@@ -348,7 +348,7 @@ bool Node::IsInt() const {
 bool Node::IsDouble() const {
     const auto* root1 = get_if<double>(&value_);
     const auto* root2 = get_if<int>(&value_);
-    if ((root1) or (root2)) {
+    if ((root1) || (root2)) {
         return true;
     }
     else {

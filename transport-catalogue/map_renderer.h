@@ -106,7 +106,7 @@ private:
 }; 
 
 //Заменяет координаты на поверхности земли (lat, lng) на координаты на плоскости (x, y)
-void GetStopsPoints(const RenderSettings& settings, std::map<std::string_view, RouteInfo>& buses);
+std::map<std::string_view, RouteInfo>  ProjectionStopsPoints(const RenderSettings& settings, const std::map<std::string_view, RouteInfo>& buses);
     
 void PrintRoutesLines(const RenderSettings& settings, const std::map<std::string_view, RouteInfo>& buses, svg::Document& doc);
        
@@ -119,6 +119,6 @@ void PrintStopsCircles(const RenderSettings& settings, svg::Document& doc, const
  
 void PrintStopsNames(const RenderSettings& settings, svg::Document& doc, const std::map<std::string_view, svg::Point>& stops);
     
-std::string GetMapJson(const RenderSettings& settings, std::map<std::string_view, RouteInfo> buses);
+std::string GetMapJson(const RenderSettings& settings, const std::map<std::string_view, RouteInfo>& buses);
    
 } //transport_catalogue
