@@ -277,6 +277,10 @@ Node LoadNode(istream& input) {
 const Node::Value& Node::GetValue() const {
     return value_;
 }
+
+Node::Value& Node::GetValue() {
+    return value_;
+}
     
 int Node::AsInt() const {
     if (const auto* root = get_if<int>(&value_)) {

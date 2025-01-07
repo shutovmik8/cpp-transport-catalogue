@@ -19,11 +19,6 @@ svg::Point SphereProjector::operator()(Coordinates coords) const {
     return {(coords.lng - min_lon_) * zoom_coeff_ + padding_,
         (max_lat_ - coords.lat) * zoom_coeff_ + padding_};
 }
-    
-//В предыдущей версии кода buses менялся в строчках 40, 41.
-//В этой функции происходит проекция координат на плоскость (изменил название на более говорящее), поэтому buses передавался по неконстантной ссылке.
-//По этой же причине в функции GetMapJson buses не константный, так как предполагалось, что он будет изменен далее.
-//Если передавать buses по const ссылке, то тогда нужно делать копию и работать далее с ней (строчка 30, 37)
 
 std::map<std::string_view, RouteInfo> ProjectionStopsPoints(const RenderSettings& settings, const std::map<std::string_view, RouteInfo>& buses) {
     std::set<Coordinates> coordinates;

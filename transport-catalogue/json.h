@@ -29,7 +29,7 @@ public:
     Node() = default;
  
     template <typename Type>
-    Node(Type value) : value_(value) {}
+    Node(Type value) : value_(std::move(value)) {}
     
     int AsInt() const;
     bool AsBool() const;
@@ -38,6 +38,7 @@ public:
     const Array& AsArray() const;
     const Dict& AsMap() const;
     const Value& GetValue() const;
+    Value& GetValue();
     
     bool IsInt() const;
     bool IsDouble() const;

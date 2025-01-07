@@ -4,6 +4,7 @@
 #include <string>
 
 #include "json_reader.h"
+#include "json_builder.h"
 
 /*
  * Здесь можно разместить код наполнения транспортного справочника данными из JSON,
@@ -13,36 +14,32 @@ namespace transport_catalogue {
 
 using namespace std::literals;
 
-json::Node GetBusStat(const TransportCatalogue& tansport_catalogue, const json::Node& request) {
+void GetBusStat(const TransportCatalogue& tansport_catalogue, const json::Node& request, json::Builder& builder) {
     auto bus_info = tansport_catalogue.GetBusInfo(request.AsMap().at("name").AsString());
-    json::Dict answer;
-    answer.insert({"request_id", json::Node{request.AsMap().at("id").AsInt()}});
-    if (!bus_info.has_value()) {
-        answer.insert({"error_message", json::Node{"not found"s}});
-        return json::Node{answer};
+    builder.StartDict().Key("request_id").Value(request.AsMap().at("id").AsInt());
+    if (!bus_info.has_value()) { 
+        builder.Key("error_message").Value("not found").EndDict();
+        return;
     }
-    answer.insert({"curvature", json::Node{bus_info->curvature}});
-    answer.insert({"route_length", json::Node{bus_info->length}});
-    answer.insert({"stop_count", json::Node{static_cast<int>(bus_info->stops_on_route)}});
-    answer.insert({"unique_stop_count", json::Node{static_cast<int>(bus_info->unique_stops)}});
-    return json::Node{answer};
+    builder.Key("curvature").Value(bus_info->curvature)
+        .Key("route_length").Value(bus_info->length)
+        .Key("stop_count").Value(static_cast<int>(bus_info->stops_on_route))
+        .Key("unique_stop_count").Value(static_cast<int>(bus_info->unique_stops)).EndDict();
 }
-    
-json::Node GetStopStat(const TransportCatalogue& tansport_catalogue, const json::Node& request) {
+
+void GetStopStat(const TransportCatalogue& tansport_catalogue, const json::Node& request, json::Builder& builder) {
     auto buses_for_stop = tansport_catalogue.GetBusesForStop(request.AsMap().at("name").AsString());
-    json::Dict answer;
-    answer.insert({"request_id", json::Node{request.AsMap().at("id").AsInt()}});
+    builder.StartDict().Key("request_id").Value(request.AsMap().at("id").AsInt());
     if (!buses_for_stop.has_value()) {
-        answer.insert({"error_message", json::Node{"not found"s}});
-        return json::Node{answer};
+        builder.Key("error_message").Value("not found").EndDict();
+        return;
     }
     json::Array buses;
+    builder.Key("buses").StartArray();
     for (auto& bus_name : *buses_for_stop) {
-        buses.push_back(json::Node{std::string{bus_name}});
+        builder.Value(std::string{bus_name});
     }
-    answer.insert({"buses", json::Node{buses}});
-    return json::Node{answer};
-
+    builder.EndArray().EndDict();
 }
 
 std::vector<std::string_view> MakeStopsNamesVector(const std::vector<json::Node>& stops) {
@@ -145,23 +142,21 @@ void LoadCatalogueFromJson(TransportCatalogue& catalogue, const json::Node& root
 
 json::Document ParseAndMakeAnswers(const TransportCatalogue& tansport_catalogue, const json::Node& catalogue_data) {
     const auto& stat_requests = catalogue_data.AsMap().at("stat_requests").AsArray();
-    std::vector<json::Node> answers;
+    json::Builder builder{};
+    builder.StartArray();
     for (const auto& request : stat_requests) {
         if (request.AsMap().at("type").AsString() == "Bus") {
-            answers.push_back(GetBusStat(tansport_catalogue, request));
+            GetBusStat(tansport_catalogue, request, builder);
         }
         else if (request.AsMap().at("type").AsString() == "Stop") {
-            answers.push_back(GetStopStat(tansport_catalogue, request));
+            GetStopStat(tansport_catalogue, request, builder);
         }
         else if (request.AsMap().at("type").AsString() == "Map") {
-            json::Dict map_answer;
-            map_answer.insert({"request_id", request.AsMap().at("id").AsInt()});
-            std::map<std::string_view, RouteInfo> buses = GetAllBuses(tansport_catalogue, catalogue_data);
-            map_answer.insert({"map", GetMapJson(ParseRenderSettings(catalogue_data), buses)});
-            answers.push_back(json::Node(map_answer));
+            builder.StartDict().Key("request_id").Value(request.AsMap().at("id").AsInt())
+                .Key("map").Value(GetMapJson(ParseRenderSettings(catalogue_data), GetAllBuses(tansport_catalogue, catalogue_data))).EndDict();
         }
     }
-    return json::Document{json::Node{answers}};
+    return json::Document{builder.EndArray().Build()};
 }
     
 } //trancport_catalogue
