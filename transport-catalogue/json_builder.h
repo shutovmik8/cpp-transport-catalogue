@@ -3,17 +3,18 @@
 #include "json.h"
 
 namespace json {
-
-class DictItemContext;
-class KeyItemContext;
-class ValueAfterKeyItemContext;
-class ArrayItemContext;
     
 class Builder {
     Node root_{};
     std::vector<Node*> nodes_stack_;
     
+    class DictItemContext;
+    class KeyItemContext;
+    class ValueAfterKeyItemContext;
+    class ArrayItemContext;
+
 public:
+
     Builder();
     KeyItemContext Key(std::string);
     Builder& Value(Node::Value value);
@@ -24,7 +25,7 @@ public:
     json::Node Build();
 };  
 
-class DictItemContext {
+class Builder::DictItemContext {
     Builder& builder_;
     
 public:
@@ -33,7 +34,7 @@ public:
     Builder& EndDict();
 };
     
-class KeyItemContext {
+class Builder::KeyItemContext {
     Builder& builder_;
     
 public:
@@ -44,7 +45,7 @@ public:
     ArrayItemContext StartArray();
 };
     
-class ValueAfterKeyItemContext {
+class Builder::ValueAfterKeyItemContext {
     Builder& builder_;
     
 public:
@@ -54,7 +55,7 @@ public:
     Builder& EndDict();
 };
  
-class ArrayItemContext {
+class Builder::ArrayItemContext {
     Builder& builder_;
     
 public:

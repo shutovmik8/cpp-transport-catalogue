@@ -7,43 +7,34 @@ Builder::Builder() {
     nodes_stack_.push_back(&root_);
 }  
     
-KeyItemContext Builder::Key(std::string str) {
+Builder::KeyItemContext Builder::Key(std::string str) {
     if (nodes_stack_.empty()) {
         throw std::logic_error("Two times use Value()");
     }
     if (!nodes_stack_.back()->IsMap()) {
         throw std::logic_error("Key() for not Map Node");
     }
-    std::get<Dict>(nodes_stack_.back()->GetValue())[str] = Node(nullptr);
-    nodes_stack_.push_back(&(std::get<Dict>(nodes_stack_.back()->GetValue())[str]));
+    nodes_stack_.push_back(&(std::get<Dict>(nodes_stack_.back()->GetValue())[std::move(str)] = Node(nullptr)));
     return KeyItemContext(*this);
 }
-
-template <typename Value>
-void AcceptValue(Node& tmp, Value value) {
-    tmp = Node(value);
-} 
     
 Builder& Builder::Value(Node::Value value) {
     if (nodes_stack_.empty()) {
         throw std::logic_error("Two times use Value()");
     }
     else if (nodes_stack_.back()->IsNull()) {
-        Node& tmp = *nodes_stack_.back();
-        visit([&tmp](auto value) { AcceptValue(tmp, value); }, value);
+        *nodes_stack_.back() = Node(std::move(value));
         nodes_stack_.pop_back();
         return *this;
     }
     else if (nodes_stack_.back()->IsArray()) {
-        Node tmp;
-        visit([&tmp](auto value) { AcceptValue(tmp, value); }, value);
-        std::get<Array>(nodes_stack_.back()->GetValue()).push_back(tmp);
+        std::get<Array>(nodes_stack_.back()->GetValue()).push_back(Node(std::move(value)));
         return *this;
     }
     throw std::logic_error("Invalid use of Value()");
 }
     
-DictItemContext Builder::StartDict() {
+Builder::DictItemContext Builder::StartDict() {
     if (nodes_stack_.empty()) {
         throw std::logic_error("Usage StartDict() with complite Node");
     }
@@ -67,7 +58,7 @@ Builder& Builder::EndDict() {
     return *this;
 }
     
-ArrayItemContext Builder::StartArray() {
+Builder::ArrayItemContext Builder::StartArray() {
     if (nodes_stack_.empty()) {
         throw std::logic_error("Usage StartArray() with complite Node");
     }
@@ -99,47 +90,47 @@ json::Node Builder::Build() {
     return root_;
 }
 
-KeyItemContext DictItemContext::Key(std::string str) {
-    return builder_.Key(str);
+Builder::KeyItemContext Builder::DictItemContext::Key(std::string str) {
+    return builder_.Key(std::move(str));
 }
     
-Builder& DictItemContext::EndDict() {
+Builder& Builder::DictItemContext::EndDict() {
     return builder_.EndDict();
 }
     
-ValueAfterKeyItemContext KeyItemContext::Value(Node::Value value) {
-    return ValueAfterKeyItemContext(builder_.Value(value));
+Builder::ValueAfterKeyItemContext Builder::KeyItemContext::Value(Node::Value value) {
+    return ValueAfterKeyItemContext(builder_.Value(std::move(value)));
 }
     
-DictItemContext KeyItemContext::StartDict() {
+Builder::DictItemContext Builder::KeyItemContext::StartDict() {
     return builder_.StartDict();
 }
 
-ArrayItemContext KeyItemContext::StartArray() {
+Builder::ArrayItemContext Builder::KeyItemContext::StartArray() {
     return builder_.StartArray();
 }    
 
-KeyItemContext ValueAfterKeyItemContext::Key(std::string str) {
-    return builder_.Key(str);
+Builder::KeyItemContext Builder::ValueAfterKeyItemContext::Key(std::string str) {
+    return builder_.Key(std::move(str));
 }
     
-Builder& ValueAfterKeyItemContext::EndDict() {
+Builder& Builder::ValueAfterKeyItemContext::EndDict() {
     return builder_.EndDict();
 }
     
-ArrayItemContext ArrayItemContext::Value(Node::Value value) {
-    return ArrayItemContext(builder_.Value(value));
+Builder::ArrayItemContext Builder::ArrayItemContext::Value(Node::Value value) {
+    return ArrayItemContext(builder_.Value(std::move(value)));
 }
     
-DictItemContext ArrayItemContext::StartDict() {
+Builder::DictItemContext Builder::ArrayItemContext::StartDict() {
     return builder_.StartDict();
 }
     
-ArrayItemContext ArrayItemContext::StartArray() {
+Builder::ArrayItemContext Builder::ArrayItemContext::StartArray() {
     return builder_.StartArray();
 }
     
-Builder& ArrayItemContext::EndArray() {
+Builder& Builder::ArrayItemContext::EndArray() {
     return builder_.EndArray();
 }    
     
