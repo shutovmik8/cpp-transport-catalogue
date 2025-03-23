@@ -1,6 +1,4 @@
-/*
- * Здесь можно разместить код транспортного справочника
- */
+#include "transport_catalogue.h"
 
 #include <algorithm>
 #include <optional>
@@ -11,7 +9,6 @@
 #include <vector>
 #include <cassert>
 
-#include "transport_catalogue.h"
 
 namespace transport_catalogue {
 

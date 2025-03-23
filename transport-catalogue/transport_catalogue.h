@@ -1,8 +1,7 @@
-/*
- * Здесь можно разместить код транспортного справочника
- */
-
 #pragma once
+
+#include "geo.h"
+#include "domain.h"
 
 #include <deque>
 #include <optional>
@@ -11,9 +10,6 @@
 #include <string_view>
 #include <unordered_map>
 #include <vector>
-
-#include "geo.h"
-#include "domain.h"
 
 namespace transport_catalogue {
 

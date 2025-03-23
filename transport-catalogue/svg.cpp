@@ -1,7 +1,7 @@
+#include "svg.h"
+
 #include <string>
 #include <variant>
-
-#include "svg.h"
 
 namespace svg {
 
