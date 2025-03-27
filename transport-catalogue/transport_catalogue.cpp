@@ -45,6 +45,35 @@ void TransportCatalogue::AddStop(std::string stop_name, const Coordinates& stop_
     stops_names[stops_.back().name] = &stops_.back();
 }
 
+void TransportCatalogue::AddSpeedAndWait(double speed, double wait) {
+    bus_speed = speed;
+    bus_wait_time = wait;
+}
+
+double TransportCatalogue::GetSpeed() const {
+    return bus_speed;
+}
+
+double TransportCatalogue::GetWaitTime() const {
+    return bus_wait_time;
+}
+
+const std::deque<Stop>& TransportCatalogue::GetStops() const {
+    return stops_;
+}
+
+const std::deque<Bus>& TransportCatalogue::GetBuses() const {
+    return buses_;
+}
+
+bool TransportCatalogue::GetIsRoundtrip(const std::string_view& name) const{
+    return is_roundtrip.at(name);
+}
+
+void TransportCatalogue::AddRoundtripInfo(const std::string_view& name, bool is_roundtrip_) {
+    is_roundtrip[name] = is_roundtrip_;
+}
+
 const Bus* TransportCatalogue::FindBus(const std::string_view name) const {
     auto it = buses_names.find(name);
     if (it != buses_names.end()) {

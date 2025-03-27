@@ -13,7 +13,7 @@ using namespace std;
 int main() {
     transport_catalogue::TransportCatalogue catalogue;
     json::Document catalogue_data{json::Load(std::cin)};
-    graph::DirectedWeightedGraph<double> my_graph = transport_catalogue::LoadCatalogueFromJson(catalogue, catalogue_data.GetRoot());
-    json::Document answer_data{transport_catalogue::ParseAndMakeAnswers(catalogue, catalogue_data.GetRoot(), my_graph)};
+    transport_catalogue::LoadCatalogueFromJson(catalogue, catalogue_data.GetRoot());
+    json::Document answer_data{transport_catalogue::ParseAndMakeAnswers(catalogue, catalogue_data.GetRoot())};
     json::Print(answer_data, std::cout);;
 }

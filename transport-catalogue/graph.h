@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <vector>
+#include <iostream>
 #include <string_view>
 
 #include "ranges.h"
@@ -81,5 +82,4 @@ typename DirectedWeightedGraph<Weight>::IncidentEdgesRange
 DirectedWeightedGraph<Weight>::GetIncidentEdges(VertexId vertex) const {
     return ranges::AsRange(incidence_lists_.at(vertex));
 }
-
 }  // namespace graph

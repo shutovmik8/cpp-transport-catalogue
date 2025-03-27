@@ -133,6 +133,7 @@ void PrintStopsNames(const RenderSettings& settings, svg::Document& doc, const s
     
 std::string GetMapJson(const RenderSettings& settings, const std::map<std::string_view, RouteInfo>& buses) {
     svg::Document doc;
+    std::vector<Bus> = 
     std::map<std::string_view, RouteInfo> buses_with_points = ProjectionStopsPoints(settings, buses);
     PrintRoutesLines(settings, buses_with_points, doc);
     PrintRoutesNames(settings, buses_with_points, doc);
