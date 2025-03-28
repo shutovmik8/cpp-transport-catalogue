@@ -140,22 +140,19 @@ void LoadCatalogueFromJson(TransportCatalogue& catalogue, const json::Node& root
     }
 }
 
-void MakeRouteJson(auto& route_info, graph::DirectedWeightedGraph<double>& graph, const json::Node& request, json::Builder& builder) {
+void MakeRouteJson(const std::optional<graph::RouteInfo>& route, const json::Node& request, json::Builder& builder) {
     builder.StartDict();
-    if (!route_info.has_value()) {
+    if (!route.has_value()) {
         builder.Key("request_id").Value(request.AsMap().at("id").AsInt()).Key("error_message").Value("not found").EndDict();
         return;
     }
-    builder.Key("request_id").Value(request.AsMap().at("id").AsInt()).Key("total_time").Value(route_info.value().weight).Key("items").StartArray();
-    for (auto item : route_info.value().edges) {
-        if (graph.GetEdge(item).from % 2 == 0) {
-            builder.StartDict().Key("type").Value("Wait").Key("stop_name").Value(std::string(graph.stops_name.at(graph.GetEdge(item).to))).Key("time").Value(graph.GetEdge(item).weight).EndDict();             
-            continue;
+    builder.Key("request_id").Value(request.AsMap().at("id").AsInt()).Key("total_time").Value(route.value().total_time).Key("items").StartArray();
+    for (auto item : route.value().route_units) {
+        if (item.type) {
+            builder.StartDict().Key("type").Value("Bus").Key("bus").Value(std::string(item.name)).Key("span_count").Value(item.span_count).Key("time").Value(item.time).EndDict();
         }
         else {
-            builder.StartDict().Key("type").Value("Bus").Key("bus").Value(std::string(graph.edges_info.at(item).bus_name))
-            .Key("span_count").Value(graph.edges_info.at(item).stops_count).Key("time").Value(graph.GetEdge(item).weight).EndDict();
-            continue;              
+            builder.StartDict().Key("type").Value("Wait").Key("stop_name").Value(std::string(item.name)).Key("time").Value(item.time).EndDict();          
         } 
     }
     builder.EndArray().EndDict();
@@ -164,8 +161,7 @@ void MakeRouteJson(auto& route_info, graph::DirectedWeightedGraph<double>& graph
 json::Document ParseAndMakeAnswers(const TransportCatalogue& tansport_catalogue, const json::Node& catalogue_data) {
     const auto& stat_requests = catalogue_data.AsMap().at("stat_requests").AsArray();
     json::Builder builder{};
-    graph::DirectedWeightedGraph<double> graph(graph::MakeRoutesGraph(tansport_catalogue));
-    graph::Router<double> router(graph);
+    graph::RoutesManager routes_manager(tansport_catalogue);
     builder.StartArray();
     for (const auto& request : stat_requests) {
         if (request.AsMap().at("type").AsString() == "Bus") {
@@ -178,8 +174,7 @@ json::Document ParseAndMakeAnswers(const TransportCatalogue& tansport_catalogue,
             builder.StartDict().Key("request_id").Value(request.AsMap().at("id").AsInt()).Key("map").Value(GetMapJson(ParseRenderSettings(catalogue_data), GetAllBuses(tansport_catalogue, catalogue_data))).EndDict();
         }
         else if (request.AsMap().at("type").AsString() == "Route") {
-            auto route_info = router.BuildRoute(static_cast<size_t>(graph.stops_id.at(request.AsMap().at("from").AsString())) - 1, static_cast<size_t>(graph.stops_id.at(request.AsMap().at("to").AsString())) - 1);
-            MakeRouteJson(route_info, graph, request, builder);
+            MakeRouteJson(routes_manager.GetRoute(request.AsMap().at("from").AsString(), request.AsMap().at("to").AsString()), request, builder);
         }
     }
     return json::Document{builder.EndArray().Build()};
