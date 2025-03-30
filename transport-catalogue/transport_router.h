@@ -5,19 +5,24 @@
 
 #include <optional>
 #include <string_view>
+#include <variant>
 
 namespace graph {
 
-struct RouteUnit {
+struct BusRiding {
 	std::string_view name;
 	int span_count;
 	double time;
-	bool type; //false - wait, true - bus
+};
+
+struct Waiting {
+	std::string_view name;
+	double time;
 };
 
 struct RouteInfo {
 	double total_time;
-	std::vector<RouteUnit> route_units;
+	std::vector<std::variant<BusRiding, Waiting>> route_units;
 };
 
 class RoutesManager {
@@ -29,7 +34,7 @@ class RoutesManager {
 public:
 	RoutesManager(const transport_catalogue::TransportCatalogue& catalogue) : graph(MakeRoutesGraph(catalogue)), router(graph) {}
 
-	std::optional<RouteInfo> GetRoute(std::string_view from, std::string_view to);
+	std::optional<RouteInfo> GetRoute(std::string_view from, std::string_view to) const;
 };
 
 }

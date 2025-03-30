@@ -48,18 +48,18 @@ DirectedWeightedGraph<double> RoutesManager::MakeRoutesGraph(const transport_cat
     return graph;
 }
 
-std::optional<RouteInfo> RoutesManager::GetRoute(std::string_view from, std::string_view to) {
+std::optional<RouteInfo> RoutesManager::GetRoute(std::string_view from, std::string_view to) const {
     auto route_info = router.BuildRoute(static_cast<size_t>(graph.stops_id.at(from)) - 1, static_cast<size_t>(graph.stops_id.at(to)) - 1);
     if (!route_info.has_value()) {
         return std::nullopt;
     }
-    std::vector<RouteUnit> route_units;
+    std::vector<std::variant<BusRiding, Waiting>> route_units;
     for (auto item : route_info.value().edges) {
         if (graph.GetEdge(item).from % 2 == 0) {
-            route_units.push_back({graph.stops_name.at(graph.GetEdge(item).to), 0, graph.GetEdge(item).weight, false});
+            route_units.push_back(Waiting{graph.stops_name.at(graph.GetEdge(item).to), graph.GetEdge(item).weight});
         }
         else {
-            route_units.push_back({graph.edges_info.at(item).bus_name, graph.edges_info.at(item).stops_count, graph.GetEdge(item).weight, true});             
+            route_units.push_back(BusRiding{graph.edges_info.at(item).bus_name, graph.edges_info.at(item).stops_count, graph.GetEdge(item).weight});         
         } 
     }
     return RouteInfo{route_info.value().weight, route_units};
